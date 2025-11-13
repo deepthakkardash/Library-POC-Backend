@@ -62,14 +62,14 @@ public class BookService {
 
             log.info("User: "+user.getUserName());
 
-            Notification notif=Notification.builder()
+            Notification notif = Notification.builder()
                     .userId(user.getUserId())
                     .type("NEW_BOOK_ARRIVAL")
                     .targetRole("User")
                     .title("New Book Added!")
                     .entityType("BOOK")
-                    .message("message")
-                    .payload("{\"bookId\":"+book.getBookId()+ "}")
+                    .message("A new book titled '" + book.getTitle() + "' has been added to the library.")
+                    .payload("{\"bookId\":" + book.getBookId() + "}")
                     .status(NotificationStatus.PENDING)
                     .build();
 

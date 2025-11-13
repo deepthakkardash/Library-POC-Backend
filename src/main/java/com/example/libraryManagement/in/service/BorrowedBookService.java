@@ -45,13 +45,14 @@ public class BorrowedBookService {
         {
             log.info("Admin name : "+user.getUserName());
 
-            Notification notif=Notification.builder()
+            Notification notif = Notification.builder()
                     .userId(user.getUserId())
                     .type("BOOK_BORROWED")
                     .targetRole("Admin")
                     .title("Book Borrowed!")
-                    .message("message")
-                    .payload("{\"bookId\":"+b.getBookId()+ "}")
+                    .entityType("BORROW")
+                    .message("User '" + u.getUserName() + "' borrowed the book '" + b.getTitle() + "'.")
+                    .payload("{\"bookId\":" + b.getBookId() + "}")
                     .status(NotificationStatus.PENDING)
                     .build();
 
@@ -163,16 +164,17 @@ public class BorrowedBookService {
         {
             log.info("Admin name : "+u.getUserName());
 
-            Notification notif=Notification.builder()
+            Notification notif = Notification.builder()
                     .userId(u.getUserId())
                     .type("BOOK_BORROWED")
                     .targetRole("Admin")
                     .title("Book Borrowed!")
                     .entityType("BORROW")
-                    .message("message")
-                    .payload("{\"bookId\":"+book.getBookId()+ "}")
+                    .message("User '" + user.getUserName() + "' borrowed the book '" + book.getTitle() + "'.")
+                    .payload("{\"bookId\":" + book.getBookId() + "}")
                     .status(NotificationStatus.PENDING)
                     .build();
+
 
             notificationService.sendNotification(notif);
         }

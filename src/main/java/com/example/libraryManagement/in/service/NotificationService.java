@@ -34,14 +34,17 @@ public class NotificationService
         notification.setStatus(NotificationStatus.PENDING);
         Notification saved=notificationRepository.save(notification);
 
-        if(notification.getUserId()!=0)
-        {
-          messagingTemplate.convertAndSend("/queue/user-"+notification.getUserId(),saved);
-        } else if (notification.getTargetRole()!=null) {
-            messagingTemplate.convertAndSend("/topic/"+notification.getTargetRole().toLowerCase(),saved);
+        if (notification.getUserId() != null && notification.getUserId() != 0) {
+            messagingTemplate.convertAndSend("/queue/user-" + notification.getUserId(), saved);
         }
-        else {
-            messagingTemplate.convertAndSend("/topic/all",saved);
+
+        if (notification.getTargetRole() != null) {
+            messagingTemplate.convertAndSend("/topic/" + notification.getTargetRole().toLowerCase(), saved);
+        }
+
+        if ((notification.getUserId() == null || notification.getUserId() == 0)
+                && notification.getTargetRole() == null) {
+            messagingTemplate.convertAndSend("/topic/all", saved);
         }
 
         saved.setStatus(NotificationStatus.SENT);
