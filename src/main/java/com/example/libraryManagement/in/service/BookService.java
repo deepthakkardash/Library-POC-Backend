@@ -8,6 +8,13 @@ import java.util.List;
 import java.util.Optional;
 import java.util.Scanner;
 
+import com.example.libraryManagement.in.entites.Notification;
+import com.example.libraryManagement.in.entites.NotificationStatus;
+import com.example.libraryManagement.in.entites.User;
+import com.example.libraryManagement.in.repository.userRepository;
+import lombok.extern.slf4j.Slf4j;
+import org.apache.logging.log4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
@@ -15,6 +22,8 @@ import org.springframework.web.multipart.MultipartFile;
 import com.example.libraryManagement.in.entites.Book;
 import com.example.libraryManagement.in.repository.bookRepository;
 
+
+@Slf4j
 @Service
 public class BookService {
 	
@@ -22,9 +31,19 @@ public class BookService {
 	
 	@Autowired
 	private bookRepository bookRepo;
+
+    @Autowired
+    private userRepository userRepository;
+
+    @Autowired
+    private NotificationService notificationService;
+
+//    private final static Logger logger= (Logger) LoggerFactory.getLogger(BookService.class);
 	
 	public Boolean SaveBook(String title,String isbn,int copies,String author, String category, int userId, String filepath)
 	{
+
+        log.info("Comes To Book Service");
 		Book books=bookRepo.findByIsbn(isbn);
 		if (books != null) {
 			return false;
@@ -33,6 +52,32 @@ public class BookService {
 		Book book= new Book(title, isbn, copies,author,category,filepath);
 		book.setCreatedBy((userId));
 		bookRepo.save(book);
+
+        log.info("Books Added");
+        List<User> users=userRepository.findByUserType("User");
+
+
+        for (User user:users)
+        {
+
+            log.info("User: "+user.getUserName());
+
+            Notification notif=Notification.builder()
+                    .userId(user.getUserId())
+                    .type("NEW_BOOK_ARRIVAL")
+                    .targetRole("User")
+                    .title("New Book Added!")
+                    .entityType("BOOK")
+                    .message("message")
+                    .payload("{\"bookId\":"+book.getBookId()+ "}")
+                    .status(NotificationStatus.PENDING)
+                    .build();
+
+            notificationService.sendNotification(notif);
+        }
+
+
+
 		return true;
 	}
 	

@@ -6,18 +6,19 @@ import java.util.Optional;
 import java.util.stream.Collector;
 import java.util.stream.Collectors;
 
+import com.example.libraryManagement.in.entites.*;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
-import com.example.libraryManagement.in.entites.Book;
-import com.example.libraryManagement.in.entites.BorrwedBook;
-import com.example.libraryManagement.in.entites.User;
 import com.example.libraryManagement.in.repository.bookRepository;
 import com.example.libraryManagement.in.repository.borrowedBookRepository;
 import com.example.libraryManagement.in.repository.userRepository;
 
+
+@Slf4j
 @Service
 public class BorrowedBookService {
 	
@@ -29,11 +30,34 @@ public class BorrowedBookService {
 	
 	@Autowired
 	private bookRepository bookRepo;
-	
+
+    @Autowired
+    private NotificationService notificationService;
+
 	public void SaveBorrow(User u, Book b)
 	{
-		borrowRepo.save(new BorrwedBook(u, b));
-	}
+        log.info("Comes to BorrowedBook Service");
+        borrowRepo.save(new BorrwedBook(u, b));
+
+        List<User> users=userRepo.findByUserType("Admin");
+
+        for (User user:users)
+        {
+            log.info("Admin name : "+user.getUserName());
+
+            Notification notif=Notification.builder()
+                    .userId(user.getUserId())
+                    .type("BOOK_BORROWED")
+                    .targetRole("Admin")
+                    .title("Book Borrowed!")
+                    .message("message")
+                    .payload("{\"bookId\":"+b.getBookId()+ "}")
+                    .status(NotificationStatus.PENDING)
+                    .build();
+
+            notificationService.sendNotification(notif);
+        }
+    }
 	
 	public void SaveReturn(List<BorrwedBook> borrowed)
 	{
@@ -128,6 +152,30 @@ public class BorrowedBookService {
 	    BorrwedBook borrowedBook=new BorrwedBook(user, book);
 	    borrowedBook.setCreatedBy(userId);
 	    borrowRepo.save(borrowedBook);
+
+
+
+
+
+        List<User> users=userRepo.findByUserType("Admin");
+
+        for (User u:users)
+        {
+            log.info("Admin name : "+u.getUserName());
+
+            Notification notif=Notification.builder()
+                    .userId(u.getUserId())
+                    .type("BOOK_BORROWED")
+                    .targetRole("Admin")
+                    .title("Book Borrowed!")
+                    .entityType("BORROW")
+                    .message("message")
+                    .payload("{\"bookId\":"+book.getBookId()+ "}")
+                    .status(NotificationStatus.PENDING)
+                    .build();
+
+            notificationService.sendNotification(notif);
+        }
 	    
 	    System.out.println("user repo and book repo updated");
 	    return true;

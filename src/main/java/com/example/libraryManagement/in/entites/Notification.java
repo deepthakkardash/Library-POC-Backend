@@ -23,9 +23,8 @@ public class Notification
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long notf_id;
 
-    @ManyToOne
-    @JoinColumn(name = "userId", nullable = true)
-    private int userId;
+    @Column(name = "userId", nullable = true)
+    private Integer userId;
 
     @Column(nullable = false)
     private String targetRole;
@@ -52,7 +51,7 @@ public class Notification
     @Column
     private String entityType;
 
-    @Column(columnDefinition = "JSONB")
+    @Column(columnDefinition = "TEXT")
     private String payload;
 
     @Enumerated(EnumType.STRING)
