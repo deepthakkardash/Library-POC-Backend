@@ -29,17 +29,19 @@ public class NotificationService
         Notification saved=notificationRepository.save(notification);
 
         if (notification.getUserId() != null && notification.getUserId() != 0) {
-            messagingTemplate.convertAndSend("/queue/user-" + notification.getUserId(), saved);
+            log.info("Comes in if with user ID : "+notification.getUserId());
+            messagingTemplate.convertAndSendToUser(saved.getUserId().toString(),"/queue/notification" , saved);
         }
 
         if (notification.getTargetRole() != null) {
             messagingTemplate.convertAndSend("/topic/" + notification.getTargetRole().toLowerCase(), saved);
         }
 
-        if ((notification.getUserId() == null || notification.getUserId() == 0)
-                && notification.getTargetRole() == null) {
+else if ((notification.getUserId() == null || notification.getUserId() == 0) && notification.getTargetRole() == null) {
+        //else {
             messagingTemplate.convertAndSend("/topic/all", saved);
         }
+
 
         saved.setStatus(NotificationStatus.SENT);
 
