@@ -10,5 +10,5 @@ public class BookRequest {
 	private int numberOfCopies;
 	private String author;
 	private String category;
-	private int userId;
+	// private int userId;
 }

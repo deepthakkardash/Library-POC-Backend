@@ -1,7 +1,7 @@
 package com.example.libraryManagement.in.controller;
 
-
-
+import com.example.libraryManagement.in.config.JwtTokenUtil;
+import jakarta.servlet.http.HttpServletResponse;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -12,15 +12,13 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
-
 import com.example.libraryManagement.in.dto.ApiResponse;
 import com.example.libraryManagement.in.dto.LoginRequest;
 import com.example.libraryManagement.in.dto.UserRequest;
 import com.example.libraryManagement.in.dto.UserResponse;
 import com.example.libraryManagement.in.entites.User;
 import com.example.libraryManagement.in.service.UserService;
-
-import exception.ResourceNotFoundException;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/api/auth")
@@ -31,34 +29,26 @@ public class AuthController {
 	
 	@Autowired
 	private UserService userService;
-	
-	@PostMapping("/login")
-	public ResponseEntity<ApiResponse<UserResponse>> login(@RequestBody LoginRequest loginRequest) throws Exception
-	{
-		System.out.println(loginRequest.getUsername());
+
+    @Autowired
+    private JwtTokenUtil jwtTokenUtil;
+
+    @PostMapping("/login")
+    public ResponseEntity<ApiResponse<Map<String, Object>>> login(
+            @RequestBody LoginRequest loginRequest,
+            HttpServletResponse response) throws Exception {
+
         logger.info("Started Login Controller");
-		User user=userService.LoginUser(loginRequest.getUsername(), loginRequest.getPassword(),loginRequest.getUsertype());
-		if (user != null) 
-		{
-			UserResponse userResp=new UserResponse(user.getUserId(),user.getUserName(),user.getUserType());
-			ApiResponse<UserResponse> response=new ApiResponse<UserResponse>("success","Login Successful!!", userResp);
-//			System.out.println("Login Successfully");
-			
-//			User user,String action,String entityType, int entityId,String description
-//			ActivityLog log=new ActivityLog(user, "Login", null, 0, "Login Successfully");
-			
-//			ApiResponse<UserResponse> response=new ApiResponse<UserResponse>();
-			logger.info("Logged in Successfully!!");		
-			return ResponseEntity.ok(response);
-		}
-		else 
-		{
-			System.out.println("not authorized");
-			throw new ResourceNotFoundException("Not Authorized");
-		}
-	}
-	
-	@PostMapping("/signup")
+
+        ApiResponse<Map<String, Object>> loginResponse =
+                userService.LoginUser(loginRequest.getUsername(), loginRequest.getPassword(), loginRequest.getUsertype(), response);
+
+        logger.info("Logged in Successfully!!");
+        return ResponseEntity.ok(loginResponse);
+    }
+
+
+    @PostMapping("/signup")
 	public ResponseEntity<ApiResponse<UserResponse>> signup(@RequestBody UserRequest signupRequest)
 	{
 		logger.info("Started Signup Controller");

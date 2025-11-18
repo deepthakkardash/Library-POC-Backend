@@ -1,9 +1,18 @@
 package com.example.libraryManagement.in.service;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Scanner;
 
+import com.example.libraryManagement.in.config.JwtTokenUtil;
+import com.example.libraryManagement.in.dto.ApiResponse;
+import com.example.libraryManagement.in.dto.UserResponse;
+import exception.ResourceNotFoundException;
+import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseCookie;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import com.example.libraryManagement.in.entites.User;
@@ -16,10 +25,16 @@ public class UserService {
 	
 	@Autowired
 	private userRepository userRepo;
+
+    @Autowired
+    private PasswordEncoder passwordEncoder;
+
+    @Autowired
+    private JwtTokenUtil jwtTokenUtil;
 	
 	private User LoggedUser=null;
-	
-	
+
+
 	public User getLoggedUser() {return LoggedUser;}
 	
 	
@@ -34,7 +49,7 @@ public class UserService {
 		
 		return userRepo.save(u1);
 	}
-	
+
 	public void DiplayUsers(User user)
 	{
 		System.out.println("\nUsername: "+user.getUserName());
@@ -51,43 +66,45 @@ public class UserService {
 	{
 		
 		return userRepo.findByUserName(username);
-		
-//		User user=userRepo.findByUserName(username);
-//		
-//		if (user!=null) {
-//			return true;
-//		}
-//		return false;
+
 	}
 	
 	public User FindByUserId(int id)
 	{
 		return userRepo.findByUserId(id);
 	}
-	
-	
-	public User LoginUser(String username,String password, String usertype)
-	{
 
-		    User user= userRepo.findByUserName(username);
-		
-		    if (user != null) {
-			if(user.getPassword().equals(password) && user.getUserType().equals(usertype))
-			{
-				return user;
-			}
-			//			return user.getPassword().equals(password);
-		}
-		return null;
-//		User u=VerifyUser();
-//		
-//		if (u == null) {
-//			return null;
-//		}
-//		LoggedUser=u;
-//		System.out.println("Logged Successfully");
-//		return u.getUserType();
-	}
+
+    public ApiResponse<Map<String, Object>> LoginUser(String username, String password, String usertype, HttpServletResponse response) {
+        User user = userRepo.findByUserName(username);
+
+            if (user != null && user.getPassword().equals(password) && user.getUserType().equals(usertype)) {
+
+            // ✅ Generate JWT token
+            String token = jwtTokenUtil.generateToken(user.getUserName());
+
+            // ✅ Create HttpOnly cookie for JWT
+            ResponseCookie jwtCookie = ResponseCookie.from("Authorization", token)
+                    .httpOnly(true)
+                    .secure(false)          // set true in HTTPS
+                    .path("/")
+                    .maxAge(5 * 60 * 60)    // 5 hours
+                    .sameSite("Lax")        // or "None" if frontend on different domain
+                    .build();
+
+            response.addHeader("Set-Cookie", jwtCookie.toString());
+
+            // ✅ Prepare response data (same type as before)
+            Map<String, Object> data = new HashMap<>();
+            data.put("token", token);
+            data.put("user", new UserResponse(user.getUserId(), user.getUserName(), user.getUserType()));
+
+            return new ApiResponse<>("success", "Login Successful!!", data);
+        }
+
+        throw new ResourceNotFoundException("Not Authorized");
+    }
+
 	
 	public void LogOutUser() {
 		LoggedUser=null;

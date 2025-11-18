@@ -10,6 +10,6 @@ public class LibraryManagementFullstack
 {
 	public static void main(String[] args)
 	{
-		SpringApplication.run(LibraryManagementFullstack.class, args);	
+		SpringApplication.run(LibraryManagementFullstack.class, args);
 	}
 }

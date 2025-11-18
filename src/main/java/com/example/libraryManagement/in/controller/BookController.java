@@ -4,24 +4,18 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.List;
-
+import com.example.libraryManagement.in.config.JwtTokenUtil;
+import com.example.libraryManagement.in.entites.User;
+import com.example.libraryManagement.in.service.JwtService;
+import com.example.libraryManagement.in.service.UserService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.CrossOrigin;
-import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestPart;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
-
 import com.example.libraryManagement.in.dto.ApiResponse;
 import com.example.libraryManagement.in.dto.BookRequest;
 import com.example.libraryManagement.in.entites.Book;
@@ -33,9 +27,18 @@ import com.example.libraryManagement.in.service.BookService;
 public class BookController {
 	@Autowired
 	private BookService bookService;
-	
+
+    @Autowired
+    private JwtTokenUtil jwtTokenUtil;
+
+    @Autowired
+    private UserService userService;
+
+    @Autowired
+    private JwtService jwtService;
+
 	private static final Logger logger=LoggerFactory.getLogger(BookController.class);
-	
+
 	@GetMapping("/all")
 	public ResponseEntity<ApiResponse<List<Book>>> getAllBooks() {
 	    List<Book> books = bookService.GetAllBooks();
@@ -58,7 +61,6 @@ public class BookController {
 		return ResponseEntity.ok(res);
 	}
 
-	
 	@GetMapping("/{id}")
 	public ResponseEntity<ApiResponse<Book>> getBook(@PathVariable int id) throws Exception
 	{
@@ -83,15 +85,16 @@ public class BookController {
 	    @RequestPart("book") BookRequest bookRequest,
 	    @RequestPart(value = "image", required = false) MultipartFile imagefile) {
 
+        User user=jwtService.getAuthenticatedUser();
 		
-		logger.info("username :::: "+bookRequest.getUserId());
+		logger.info("username :::: "+user.getUserId());
 		
 	    boolean updated = bookService.EditBook(
 	        id,
 	        bookRequest.getTitle(),
 	        bookRequest.getIsbn(),
 	        bookRequest.getNumberOfCopies(),
-	        bookRequest.getUserId(),
+	        user.getUserId(),
 	        imagefile);
 
 	    if (updated) {
@@ -108,10 +111,30 @@ public class BookController {
 	}
 	
 	
-	@PostMapping(value = "/add", consumes = org.springframework.http.MediaType.MULTIPART_FORM_DATA_VALUE)
+	@PostMapping(value = "/add", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
 	public ResponseEntity<ApiResponse<String>> addBook(
 	    @RequestPart("book") BookRequest bookrequest,
 	    @RequestPart("image") MultipartFile imagefile) {
+
+        // Get logged in username from SecurityContext
+//        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+//
+//        if (auth == null || auth.getName() == null) {
+//            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+//                    .body(new ApiResponse<>("error", "Unauthorized - no authentication found", null));
+//        }
+//
+//        String username = auth.getName();
+//
+//        User user = userService.FindByUsername(username);
+//        if (user == null) {
+//            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+//                    .body(new ApiResponse<>("error", "User not found", null));
+//        }
+
+
+
+        User user=jwtService.getAuthenticatedUser();
 
 	    String fileName = null;
 	    try {
@@ -146,7 +169,7 @@ public class BookController {
 	        bookrequest.getNumberOfCopies(),
 	        bookrequest.getAuthor(),
 	        bookrequest.getCategory(),
-	        bookrequest.getUserId(),
+	        user.getUserId(),
 	        "/uploads/books/" + fileName);
 
 	    if (added) {
@@ -168,9 +191,6 @@ public class BookController {
 	    return ResponseEntity.status(HttpStatus.CONFLICT).body(res);
 	}
 
-
-
-	
 	@DeleteMapping("/{id}")
 	public ResponseEntity<ApiResponse<String>> deleteBook(@PathVariable int id) {
 	    Book book = bookService.SearchBookById(id);
@@ -203,10 +223,12 @@ public class BookController {
 	        ApiResponse<String> res = new ApiResponse<>("success", msg, null);
 	        return ResponseEntity.ok(res);
 	    }
+        else {
+            System.out.println("deletion failed here ");
+        }
 	    ApiResponse<String> res = new ApiResponse<>("error", "Book Not Found", null);
 	    logger.info("Book is Not Found!!");
 	    return ResponseEntity.status(HttpStatus.NOT_FOUND).body(res);
 	}
-
 
 }

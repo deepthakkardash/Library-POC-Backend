@@ -1,22 +1,18 @@
 package com.example.libraryManagement.in.controller;
 
 import java.util.List;
-
+import com.example.libraryManagement.in.config.JwtTokenUtil;
+import com.example.libraryManagement.in.entites.User;
+import com.example.libraryManagement.in.service.JwtService;
+import com.example.libraryManagement.in.service.UserService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.CrossOrigin;
-import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
-
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.web.bind.annotation.*;
 import com.example.libraryManagement.in.dto.ApiResponse;
 import com.example.libraryManagement.in.dto.BorrowRequest;
 import com.example.libraryManagement.in.entites.Book;
@@ -25,19 +21,46 @@ import com.example.libraryManagement.in.service.BorrowedBookService;
 
 @RestController
 @RequestMapping("/api/borrow")
-@CrossOrigin(origins = "http://localhost:5173")
+// @CrossOrigin(origins = "http://localhost:5173")
 public class BorrowController {
 	@Autowired
 	private BorrowedBookService borrowService;
+
+    @Autowired
+    private UserService userService;
+
+    @Autowired
+    private JwtTokenUtil jwtTokenUtil;
+
+    @Autowired
+    private JwtService jwtService;
 	
 	private static final Logger logger=LoggerFactory.getLogger(BorrowController.class);
 	
 	@PostMapping("/bookborrow")
-	public ResponseEntity<ApiResponse<String>> borrowBook(@RequestBody BorrowRequest borrowRequest) {
-	    System.out.println("Come in borrow Controller");
-	    System.out.println("userID : " + borrowRequest.getUserId() + " bookId: " + borrowRequest.getBookId());
+	public ResponseEntity<ApiResponse<String>> borrowBook(
+            @RequestBody BorrowRequest borrowRequest) {
 
-	    boolean borrowed = borrowService.BorrowBook(borrowRequest.getBookId(), borrowRequest.getUserId());
+//        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+//
+//        if (auth == null || auth.getName() == null) {
+//            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+//                    .body(new ApiResponse<>("error", "Unauthorized - no authentication found", null));
+//        }
+//
+//        String username = auth.getName();
+//        System.out.println("Logged in user: " + username);
+//
+//        // Fetch user
+//        User user = userService.FindByUsername(username);
+//        if (user == null) {
+//            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+//                    .body(new ApiResponse<>("error", "User not found", null));
+//        }
+
+        User user=jwtService.getAuthenticatedUser();
+
+        boolean borrowed = borrowService.BorrowBook(borrowRequest.getBookId(), user.getUserId());
 
 	    System.out.println("After boolean response");
 
@@ -55,7 +78,6 @@ public class BorrowController {
 
 	    System.out.println("Cannot borrow the book");
 
-	    
 	    ApiResponse<String> res = new ApiResponse<>(
 	        "error",
 	        "Failed to borrow book",
@@ -65,8 +87,6 @@ public class BorrowController {
 	    return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(res);
 	}
 
-	
-	
 	@GetMapping("/{id}")
 	public ResponseEntity<ApiResponse<List<BorrwedBook>>> getAllBorrowed(@PathVariable int id) {
 	    List<BorrwedBook> borrowedBooks = borrowService.MyBorrowedBooks(id);
