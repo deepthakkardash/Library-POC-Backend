@@ -9,7 +9,6 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
-
 import java.util.List;
 
 
@@ -20,13 +19,8 @@ public class NotificationService
     @Autowired
     private NotificationRepository notificationRepository;
 
-
     @Autowired
     private SimpMessagingTemplate messagingTemplate;
-
-//    private  final static Logger logger= LoggerFactory.getLogger(NotificationService.class);
-
-
 
     public Notification sendNotification(Notification notification)
     {
