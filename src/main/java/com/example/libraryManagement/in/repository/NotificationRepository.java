@@ -9,4 +9,9 @@ public interface NotificationRepository extends JpaRepository<Notification, Long
 {
     List<Notification> findByUserId(Long userId);
     List<Notification> findByTargetRole(String role);
+
+    List<Notification> findByUserIdAndIsReadFalse(int userId);
+
+    List<Notification> findByUserIdOrderByCreatedAtDesc(int userId);
+
 }

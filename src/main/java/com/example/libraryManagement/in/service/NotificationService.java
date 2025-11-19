@@ -9,6 +9,8 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
+
+import java.time.LocalDateTime;
 import java.util.List;
 
 
@@ -21,6 +23,9 @@ public class NotificationService
 
     @Autowired
     private SimpMessagingTemplate messagingTemplate;
+
+    @Autowired
+    private JwtService jwtService;
 
     public Notification sendNotification(Notification notification)
     {
@@ -52,6 +57,24 @@ else if ((notification.getUserId() == null || notification.getUserId() == 0) && 
     public List<Notification> getUserNotifications(long userId)
     {
         return notificationRepository.findByUserId(userId);
+    }
+
+
+    public List<Notification> getUnreadNotifications() {
+        int userId=jwtService.getAuthenticatedUser().getUserId();
+        return notificationRepository.findByUserIdAndIsReadFalse(userId);
+    }
+
+    public Notification markAsRead(Long notificationId) {
+
+        log.info("comes in service");
+        Notification notif = notificationRepository.findById(notificationId)
+                .orElseThrow(() -> new RuntimeException("Notification not found"));
+
+        notif.setIsRead(true);
+        notif.setReadAt(LocalDateTime.now());
+
+        return notificationRepository.save(notif);
     }
 
 }

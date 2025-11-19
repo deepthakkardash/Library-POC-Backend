@@ -37,8 +37,9 @@ public class Notification
     @Column
     private String message;
 
-    @Column
-    private Boolean is_read=false;
+    @Builder.Default
+    @Column(name = "is_read", nullable = false, columnDefinition = "BOOLEAN DEFAULT FALSE")
+    private Boolean isRead = false;
 
     @Column
     @CreationTimestamp
