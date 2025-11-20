@@ -75,9 +75,6 @@ public class BookService {
 
             notificationService.sendNotification(notif);
         }
-
-
-
 		return true;
 	}
 	

@@ -4,13 +4,10 @@ import com.example.libraryManagement.in.entites.Notification;
 import com.example.libraryManagement.in.entites.NotificationStatus;
 import com.example.libraryManagement.in.repository.NotificationRepository;
 import lombok.extern.slf4j.Slf4j;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
 import java.util.List;
-
 
 @Slf4j
 @Service
@@ -33,8 +30,18 @@ public class NotificationService
             messagingTemplate.convertAndSendToUser(saved.getUserId().toString(),"/queue/notification" , saved);
         }
 
+        // 2️⃣ Send role-based notifications
         if (notification.getTargetRole() != null) {
-            messagingTemplate.convertAndSend("/topic/" + notification.getTargetRole().toLowerCase(), saved);
+
+            // SPECIAL CASE — NEW BOOK ADDED (broadcast to all users)
+            if ("NEW_BOOK_ARRIVAL".equals(notification.getType())) {
+                messagingTemplate.convertAndSend("/topic/books", saved);
+            } else {
+                messagingTemplate.convertAndSend(
+                        "/topic/" + notification.getTargetRole().toLowerCase(),
+                        saved
+                );
+            }
         }
 
 else if ((notification.getUserId() == null || notification.getUserId() == 0) && notification.getTargetRole() == null) {
