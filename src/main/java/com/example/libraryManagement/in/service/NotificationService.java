@@ -25,28 +25,34 @@ public class NotificationService
         notification.setStatus(NotificationStatus.PENDING);
         Notification saved=notificationRepository.save(notification);
 
+        // 1️⃣ Private notification (specific user)
         if (notification.getUserId() != null && notification.getUserId() != 0) {
-            log.info("Comes in if with user ID : "+notification.getUserId());
-            messagingTemplate.convertAndSendToUser(saved.getUserId().toString(),"/queue/notification" , saved);
+            messagingTemplate.convertAndSendToUser(
+                    saved.getUserId().toString(),
+                    "/queue/notification",
+                    saved
+            );
         }
 
-        // 2️⃣ Send role-based notifications
+        // 2️⃣ NEW BOOK ARRIVAL → ONLY for users → ONLY broadcast on /topic/books
+        if ("NEW_BOOK_ARRIVAL".equals(notification.getType())) {
+            messagingTemplate.convertAndSend("/topic/books", saved);
+            return saved;
+        }
+
+        // 3️⃣ BOOK BORROWED → for admins → broadcast on /topic/admin
+        if ("BOOK_BORROWED".equals(notification.getType())) {
+            messagingTemplate.convertAndSend("/topic/admin", saved);
+            return saved;
+        }
+
+        // 4️⃣ Role-based notifications ONLY if needed
         if (notification.getTargetRole() != null) {
-
-            // SPECIAL CASE — NEW BOOK ADDED (broadcast to all users)
-            if ("NEW_BOOK_ARRIVAL".equals(notification.getType())) {
-                messagingTemplate.convertAndSend("/topic/books", saved);
-            } else {
-                messagingTemplate.convertAndSend(
-                        "/topic/" + notification.getTargetRole().toLowerCase(),
-                        saved
-                );
-            }
-        }
-
-else if ((notification.getUserId() == null || notification.getUserId() == 0) && notification.getTargetRole() == null) {
-        //else {
-            messagingTemplate.convertAndSend("/topic/all", saved);
+            messagingTemplate.convertAndSend(
+                    "/topic/" + notification.getTargetRole().toLowerCase(),
+                    saved
+            );
+            return saved;
         }
 
 
