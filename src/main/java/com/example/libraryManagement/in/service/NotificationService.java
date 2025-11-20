@@ -76,5 +76,4 @@ else if ((notification.getUserId() == null || notification.getUserId() == 0) && 
 
         return notificationRepository.save(notif);
     }
-
 }
