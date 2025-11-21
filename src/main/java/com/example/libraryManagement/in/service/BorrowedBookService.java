@@ -154,10 +154,6 @@ public class BorrowedBookService {
 	    borrowedBook.setCreatedBy(userId);
 	    borrowRepo.save(borrowedBook);
 
-
-
-
-
         List<User> users=userRepo.findByUserType("Admin");
 
         for (User u:users)

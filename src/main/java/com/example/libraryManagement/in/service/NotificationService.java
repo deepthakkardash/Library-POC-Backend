@@ -4,15 +4,12 @@ import com.example.libraryManagement.in.entites.Notification;
 import com.example.libraryManagement.in.entites.NotificationStatus;
 import com.example.libraryManagement.in.repository.NotificationRepository;
 import lombok.extern.slf4j.Slf4j;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
 import java.util.List;
-
 
 @Slf4j
 @Service
@@ -33,18 +30,34 @@ public class NotificationService
         notification.setStatus(NotificationStatus.PENDING);
         Notification saved=notificationRepository.save(notification);
 
+        // 1️⃣ Private notification (specific user)
         if (notification.getUserId() != null && notification.getUserId() != 0) {
-            log.info("Comes in if with user ID : "+notification.getUserId());
-            messagingTemplate.convertAndSendToUser(saved.getUserId().toString(),"/queue/notification" , saved);
+            messagingTemplate.convertAndSendToUser(
+                    saved.getUserId().toString(),
+                    "/queue/notification",
+                    saved
+            );
         }
 
+        // 2️⃣ NEW BOOK ARRIVAL → ONLY for users → ONLY broadcast on /topic/books
+        if ("NEW_BOOK_ARRIVAL".equals(notification.getType())) {
+            messagingTemplate.convertAndSend("/topic/books", saved);
+            return saved;
+        }
+
+        // 3️⃣ BOOK BORROWED → for admins → broadcast on /topic/admin
+        if ("BOOK_BORROWED".equals(notification.getType())) {
+            messagingTemplate.convertAndSend("/topic/admin", saved);
+            return saved;
+        }
+
+        // 4️⃣ Role-based notifications ONLY if needed
         if (notification.getTargetRole() != null) {
-            messagingTemplate.convertAndSend("/topic/" + notification.getTargetRole().toLowerCase(), saved);
-        }
-
-else if ((notification.getUserId() == null || notification.getUserId() == 0) && notification.getTargetRole() == null) {
-        //else {
-            messagingTemplate.convertAndSend("/topic/all", saved);
+            messagingTemplate.convertAndSend(
+                    "/topic/" + notification.getTargetRole().toLowerCase(),
+                    saved
+            );
+            return saved;
         }
 
 

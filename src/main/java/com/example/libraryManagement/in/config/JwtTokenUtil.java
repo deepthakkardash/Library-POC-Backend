@@ -14,16 +14,10 @@ public class JwtTokenUtil
     private static final String SECRET_KEY="this_is_a_very_secret_key_for_jwt_token_generation_123456";
     private static final long EXPIRATION_TIME= 1000*60*60*5; //validate for 5 hours
 
-//    private Key getSigningKey()
-//    {
-//        return Key.hmacShaKeyFor(SECRET_KEY.getBytes());
-//    }
-
     private Key getSigningKey() {
         byte[] keyBytes = SECRET_KEY.getBytes();
         return Keys.hmacShaKeyFor(keyBytes);
     }
-
 
     public String generateToken(String username)
     {

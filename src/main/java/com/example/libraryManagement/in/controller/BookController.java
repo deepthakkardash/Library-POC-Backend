@@ -116,24 +116,6 @@ public class BookController {
 	    @RequestPart("book") BookRequest bookrequest,
 	    @RequestPart("image") MultipartFile imagefile) {
 
-        // Get logged in username from SecurityContext
-//        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-//
-//        if (auth == null || auth.getName() == null) {
-//            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-//                    .body(new ApiResponse<>("error", "Unauthorized - no authentication found", null));
-//        }
-//
-//        String username = auth.getName();
-//
-//        User user = userService.FindByUsername(username);
-//        if (user == null) {
-//            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-//                    .body(new ApiResponse<>("error", "User not found", null));
-//        }
-
-
-
         User user=jwtService.getAuthenticatedUser();
 
 	    String fileName = null;
