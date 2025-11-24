@@ -39,10 +39,13 @@ public class BorrowedBookService {
         log.info("Comes to BorrowedBook Service");
         borrowRepo.save(new BorrwedBook(u, b));
 
+//        debugger;
         List<User> users=userRepo.findByUserType("Admin");
 
-        for (User user:users)
+
+        for (int i = 0; i < users.size(); i++)
         {
+            User user = users.get(i);
             log.info("Admin name : "+user.getUserName());
 
             Notification notif = Notification.builder()
@@ -57,6 +60,12 @@ public class BorrowedBookService {
                     .build();
 
             notificationService.sendNotification(notif);
+
+
+            if (i==0)
+            {
+                notificationService.send_Notification_BOOK_BORROWED(notif);
+            }
         }
     }
 	
@@ -156,9 +165,10 @@ public class BorrowedBookService {
 
         List<User> users=userRepo.findByUserType("Admin");
 
-        for (User u:users)
+        for (int i = 0; i < users.size(); i++)
         {
-            log.info("Admin name : "+u.getUserName());
+            User u = users.get(i);
+            log.info("Admin name : "+user.getUserName());
 
             Notification notif = Notification.builder()
                     .userId(u.getUserId())
@@ -166,13 +176,19 @@ public class BorrowedBookService {
                     .targetRole("Admin")
                     .title("Book Borrowed!")
                     .entityType("BORROW")
-                    .message("User '" + user.getUserName() + "' borrowed the book '" + book.getTitle() + "'.")
+                    .message("User '" + u.getUserName() + "' borrowed the book '" + book.getTitle() + "'.")
                     .payload("{\"bookId\":" + book.getBookId() + "}")
                     .status(NotificationStatus.PENDING)
                     .build();
 
 
             notificationService.sendNotification(notif);
+
+
+            if (i==0)
+            {
+                notificationService.send_Notification_BOOK_BORROWED(notif);
+            }
         }
 	    
 	    System.out.println("user repo and book repo updated");

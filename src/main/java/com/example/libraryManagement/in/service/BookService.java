@@ -57,8 +57,9 @@ public class BookService {
         List<User> users=userRepository.findByUserType("User");
 
 
-        for (User user:users)
+        for (int i = 0; i < users.size(); i++)
         {
+            User user = users.get(i);
 
             log.info("User: "+user.getUserName());
 
@@ -74,7 +75,14 @@ public class BookService {
                     .build();
 
             notificationService.sendNotification(notif);
+
+            if (i==0)
+            {
+                notificationService.send_Notification_NEW_BOOK(notif);
+            }
         }
+
+
 		return true;
 	}
 	

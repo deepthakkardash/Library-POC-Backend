@@ -24,47 +24,54 @@ public class NotificationService
     @Autowired
     private JwtService jwtService;
 
-    public Notification sendNotification(Notification notification)
-    {
+    public Notification sendNotification(Notification notification) {
         log.info("Comes to Send Notification!!");
         notification.setStatus(NotificationStatus.PENDING);
-        Notification saved=notificationRepository.save(notification);
+        return notificationRepository.save(notification);
 
         // 1️⃣ Private notification (specific user)
-        if (notification.getUserId() != null && notification.getUserId() != 0) {
-            messagingTemplate.convertAndSendToUser(
-                    saved.getUserId().toString(),
-                    "/queue/notification",
-                    saved
-            );
+//        if (notification.getUserId() != null && notification.getUserId() != 0) {
+//            messagingTemplate.convertAndSendToUser(
+//                    saved.getUserId().toString(),
+//                    "/queue/notification",
+//                    saved
+//            );
+//        }
         }
 
-        // 2️⃣ NEW BOOK ARRIVAL → ONLY for users → ONLY broadcast on /topic/books
-        if ("NEW_BOOK_ARRIVAL".equals(notification.getType())) {
+
+        public void send_Notification_NEW_BOOK(Notification saved) {
+
+            // 2️⃣ NEW BOOK ARRIVAL → ONLY for users → ONLY broadcast on /topic/books
+//        if ("NEW_BOOK_ARRIVAL".equals(notification.getType())) {
             messagingTemplate.convertAndSend("/topic/books", saved);
-            return saved;
+//            return saved;
+//        }
         }
+
+        public void send_Notification_BOOK_BORROWED(Notification saved) {
+            {
 
         // 3️⃣ BOOK BORROWED → for admins → broadcast on /topic/admin
-        if ("BOOK_BORROWED".equals(notification.getType())) {
+//        else if ("BOOK_BORROWED".equals(notification.getType())) {
             messagingTemplate.convertAndSend("/topic/admin", saved);
-            return saved;
+//            return saved;
         }
 
         // 4️⃣ Role-based notifications ONLY if needed
-        if (notification.getTargetRole() != null) {
-            messagingTemplate.convertAndSend(
-                    "/topic/" + notification.getTargetRole().toLowerCase(),
-                    saved
-            );
-            return saved;
-        }
+//        if (notification.getTargetRole() != null) {
+//            messagingTemplate.convertAndSend(
+//                    "/topic/" + notification.getTargetRole().toLowerCase(),
+//                    saved
+//            );
+//            return saved;
+//        }
 
 
-        saved.setStatus(NotificationStatus.SENT);
-
-        log.info("status sending...");
-        return notificationRepository.save(saved);
+//        saved.setStatus(NotificationStatus.SENT);
+//
+//        log.info("status sending...");
+//        return notificationRepository.save(saved);
     }
 
     public List<Notification> getUserNotifications(long userId)
