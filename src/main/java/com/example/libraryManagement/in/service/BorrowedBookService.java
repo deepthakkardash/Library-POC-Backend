@@ -165,10 +165,8 @@ public class BorrowedBookService {
 
         List<User> users=userRepo.findByUserType("Admin");
 
-        for (int i = 0; i < users.size(); i++)
-        {
-            User u = users.get(i);
-            log.info("Admin name : "+user.getUserName());
+        for (User u : users) {
+            log.info("Admin name : {}", user.getUserName());
 
             Notification notif = Notification.builder()
                     .userId(u.getUserId())
@@ -185,10 +183,10 @@ public class BorrowedBookService {
             notificationService.sendNotification(notif);
 
 
-            if (i==0)
-            {
-                notificationService.send_Notification_BOOK_BORROWED(notif);
-            }
+//            if (i==0)
+//            {
+//                notificationService.send_Notification_BOOK_BORROWED(notif);
+//            }
         }
 	    
 	    System.out.println("user repo and book repo updated");

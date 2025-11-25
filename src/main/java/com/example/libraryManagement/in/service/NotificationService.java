@@ -1,8 +1,10 @@
 package com.example.libraryManagement.in.service;
 
+import com.example.libraryManagement.in.Component.OnlineUserTracker;
 import com.example.libraryManagement.in.entites.Notification;
 import com.example.libraryManagement.in.entites.NotificationStatus;
 import com.example.libraryManagement.in.repository.NotificationRepository;
+import com.example.libraryManagement.in.repository.userRepository;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
@@ -15,6 +17,10 @@ import java.util.List;
 @Service
 public class NotificationService
 {
+
+    @Autowired
+    private OnlineUserTracker onlineUserTracker;
+
     @Autowired
     private NotificationRepository notificationRepository;
 
@@ -24,10 +30,26 @@ public class NotificationService
     @Autowired
     private JwtService jwtService;
 
-    public Notification sendNotification(Notification notification) {
+    @Autowired
+    private userRepository userRepository;
+
+    public void sendNotification(Notification notification) {
         log.info("Comes to Send Notification!!");
-        notification.setStatus(NotificationStatus.PENDING);
-        return notificationRepository.save(notification);
+
+        String username=userRepository.findByUserId(notification.getUserId()).getUsername();
+
+        if (onlineUserTracker.isUserOnline(username)) {
+            messagingTemplate.convertAndSendToUser(
+                    String.valueOf(notification.getUserId()),
+                    "/queue/notifications",
+                    notification
+            );
+        }
+
+        notificationRepository.save(notification);
+
+//        notification.setStatus(NotificationStatus.PENDING);
+//        return notificationRepository.save(notification);
 
         // 1️⃣ Private notification (specific user)
 //        if (notification.getUserId() != null && notification.getUserId() != 0) {

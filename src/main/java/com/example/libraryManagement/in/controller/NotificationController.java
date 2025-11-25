@@ -15,11 +15,11 @@ public class NotificationController
     @Autowired
     private NotificationService notificationService;
 
-    @PostMapping("/send")
-    public Notification sentNotification(@RequestBody Notification notification)
-    {
-        return notificationService.sendNotification(notification);
-    }
+//    @PostMapping("/send")
+//    public Notification sentNotification(@RequestBody Notification notification)
+//    {
+//        return notificationService.sendNotification(notification);
+//    }
 
     @GetMapping("/user/{userId}")
     public List<Notification> getUserNotifications(@PathVariable int userId)

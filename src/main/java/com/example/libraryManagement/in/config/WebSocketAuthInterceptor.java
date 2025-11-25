@@ -18,58 +18,31 @@ public class WebSocketAuthInterceptor implements ChannelInterceptor {
     @Autowired
     private JwtTokenUtil jwtTokenUtil;
 
-    @Autowired
-    private CustomUserDetailsService userDetailsService;
-
     @Override
     public Message<?> preSend(Message<?> message, MessageChannel channel) {
 
-        StompHeaderAccessor accessor =
-                MessageHeaderAccessor.getAccessor(message, StompHeaderAccessor.class);
+        StompHeaderAccessor accessor = StompHeaderAccessor.wrap(message);
 
         if (StompCommand.CONNECT.equals(accessor.getCommand())) {
 
-            // Get the raw URI from handshake
-            String rawUri = (String) accessor.getSessionAttributes()
-                    .get("javax.servlet.http.HttpServletRequest.request_uri");
+            String token = accessor.getFirstNativeHeader("Authorization");
 
-            if (rawUri == null) {
-                rawUri = (String) accessor.getSessionAttributes()
-                        .get("org.springframework.web.socket.server.support.HttpSessionHandshakeInterceptor.URI");
-            }
-
-            if (rawUri == null) {
-                System.out.println("❌ No handshake URI found");
-                return message;
-            }
-
-            // Example rawUri:
-            // /ws/123/xyz/websocket?token=Bearer abc.def.ghi
-            if (rawUri.contains("token=")) {
-                String token = rawUri.substring(rawUri.indexOf("token=") + 6);
-
-                if (token.startsWith("Bearer ")) {
-                    token = token.substring(7);
-                }
+            if (token != null && token.startsWith("Bearer ")) {
+                token = token.substring(7);
 
                 try {
                     String username = jwtTokenUtil.extractUsername(token);
-                    UserDetails userDetails = userDetailsService.loadUserByUsername(username);
 
-                    UsernamePasswordAuthenticationToken auth =
-                            new UsernamePasswordAuthenticationToken(
-                                    userDetails,
-                                    null,
-                                    userDetails.getAuthorities()
-                            );
+                    // SAVE TO SESSION
+                    accessor.getSessionAttributes().put("userId", username);
 
-                    accessor.setUser(auth);
-                    System.out.println("✅ WebSocket authenticated user: " + username);
+                    System.out.println("🌟 WebSocket CONNECT Authenticated userId = " + username);
+
                 } catch (Exception e) {
-                    System.out.println("❌ Invalid JWT in WebSocket: " + e.getMessage());
+                    System.out.println("❌ Invalid WebSocket Token: " + e.getMessage());
                 }
             } else {
-                System.out.println("❌ No token found in WebSocket URL");
+                System.out.println("❌ No Authorization header in CONNECT frame");
             }
         }
 
