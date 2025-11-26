@@ -4,9 +4,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
-
 import com.example.libraryManagement.in.dto.ApiResponse;
-import org.springframework.web.client.HttpClientErrorException;
 
 @RestControllerAdvice
 public class GlobalExceptionHandler {
@@ -17,8 +15,7 @@ public class GlobalExceptionHandler {
 		ApiResponse<String> res=new ApiResponse<String>("failed", "An unexpected error occurred", null);
 		return ResponseEntity.status(HttpStatus.NOT_FOUND).body(res);
 	}
-	
-	
+
 	@ExceptionHandler(Exception.class)
 	public ResponseEntity<ApiResponse<String>> handleAll(Exception e)
 	{
@@ -33,6 +30,4 @@ public class GlobalExceptionHandler {
                 HttpStatus.NOT_FOUND
         );
     }
-
-
 }

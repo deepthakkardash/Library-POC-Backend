@@ -43,7 +43,6 @@ public class AuthController {
         return ResponseEntity.ok(loginResponse);
     }
 
-
     @PostMapping("/signup")
 	public ResponseEntity<ApiResponse<UserResponse>> signup(@RequestBody UserRequest signupRequest)
 	{
@@ -63,15 +62,15 @@ public class AuthController {
 		}
 	}
 
-    @GetMapping("/token")
-    public ResponseEntity<String> getJwtToken(
-            @CookieValue(name = "Authorization", required = false) String token) {
-
-        if (token == null) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-                    .body("No JWT cookie found");
-        }
-
-        return ResponseEntity.ok(token);
-    }
+//    @GetMapping("/token")
+//    public ResponseEntity<String> getJwtToken(
+//            @CookieValue(name = "Authorization", required = false) String token) {
+//
+//        if (token == null) {
+//            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+//                    .body("No JWT cookie found");
+//        }
+//
+//        return ResponseEntity.ok(token);
+//    }
 }

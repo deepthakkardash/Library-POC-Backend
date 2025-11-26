@@ -86,10 +86,10 @@ public class UserService {
             // ✅ Create HttpOnly cookie for JWT
             ResponseCookie jwtCookie = ResponseCookie.from("Authorization", token)
                     .httpOnly(true)
-                    .secure(false)          // set true in HTTPS
+                    .secure(true)          // set true in HTTPS
                     .path("/")
                     .maxAge(5 * 60 * 60)    // 5 hours
-                    .sameSite("Lax")        // or "None" if frontend on different domain
+                    .sameSite("None")        // or "None" if frontend on different domain
                     .build();
 
             response.addHeader("Set-Cookie", jwtCookie.toString());

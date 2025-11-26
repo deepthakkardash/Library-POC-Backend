@@ -29,31 +29,44 @@ public class WebSocketAuthInterceptor implements ChannelInterceptor {
 
         if (StompCommand.CONNECT.equals(accessor.getCommand())) {
 
-            // Get the raw URI from handshake
-            String rawUri = (String) accessor.getSessionAttributes()
-                    .get("javax.servlet.http.HttpServletRequest.request_uri");
+            // Read JWT from STOMP header "Authorization"
+            String authHeader = accessor.getFirstNativeHeader("Authorization");
 
-            if (rawUri == null) {
-                rawUri = (String) accessor.getSessionAttributes()
-                        .get("org.springframework.web.socket.server.support.HttpSessionHandshakeInterceptor.URI");
-            }
-
-            if (rawUri == null) {
-                System.out.println("❌ No handshake URI found");
+            if(authHeader == null || !authHeader.startsWith("Bearer ")) {
+                System.out.println("❌ No Authorization header found in WebSocket CONNECT");
                 return message;
             }
 
-            // Example rawUri:
-            // /ws/123/xyz/websocket?token=Bearer abc.def.ghi
-            if (rawUri.contains("token=")) {
-                String token = rawUri.substring(rawUri.indexOf("token=") + 6);
+            String token = authHeader.substring(7); // Remove "Bearer "
 
-                if (token.startsWith("Bearer ")) {
-                    token = token.substring(7);
-                }
+
+            // Using query param for this
+            // Get the raw URI from handshake
+//            String rawUri = (String) accessor.getSessionAttributes()
+//                    .get("javax.servlet.http.HttpServletRequest.request_uri");
+//
+//            if (rawUri == null) {
+//                rawUri = (String) accessor.getSessionAttributes()
+//                        .get("org.springframework.web.socket.server.support.HttpSessionHandshakeInterceptor.URI");
+//            }
+//
+//            if (rawUri == null) {
+//                System.out.println("❌ No handshake URI found");
+//                return message;
+//            }
+//
+//            // Example rawUri:
+//            // /ws/123/xyz/websocket?token=Bearer abc.def.ghi
+//            if (rawUri.contains("token=")) {
+//                String token = rawUri.substring(rawUri.indexOf("token=") + 6);
+//
+//                if (token.startsWith("Bearer ")) {
+//                    token = token.substring(7);
+//                }
 
                 try {
                     String username = jwtTokenUtil.extractUsername(token);
+
                     UserDetails userDetails = userDetailsService.loadUserByUsername(username);
 
                     UsernamePasswordAuthenticationToken auth =
@@ -68,11 +81,7 @@ public class WebSocketAuthInterceptor implements ChannelInterceptor {
                 } catch (Exception e) {
                     System.out.println("❌ Invalid JWT in WebSocket: " + e.getMessage());
                 }
-            } else {
-                System.out.println("❌ No token found in WebSocket URL");
             }
-        }
-
         return message;
     }
 }
