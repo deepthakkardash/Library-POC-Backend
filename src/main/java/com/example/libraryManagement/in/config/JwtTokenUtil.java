@@ -19,11 +19,12 @@ public class JwtTokenUtil
         return Keys.hmacShaKeyFor(keyBytes);
     }
 
-    public String generateToken(String username)
+    public String generateToken(String username, int userId)
     {
         return Jwts.builder()
                 .setSubject(username)
                 .setIssuedAt(new Date())
+                .claim("userId", userId)
                 .setExpiration(new Date(System.currentTimeMillis() + EXPIRATION_TIME))
                 .signWith(getSigningKey(), SignatureAlgorithm.HS256)
                 .compact();
@@ -37,6 +38,16 @@ public class JwtTokenUtil
                 .parseClaimsJws(token)
                 .getBody()
                 .getSubject();
+    }
+
+    public int extractUserId(String token) {
+        Claims claims = Jwts.parserBuilder()
+                .setSigningKey(getSigningKey())
+                .build()
+                .parseClaimsJws(token)
+                .getBody();
+
+        return claims.get("userId", Integer.class);
     }
 
     public boolean validateToken(String token, String username)

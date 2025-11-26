@@ -24,15 +24,17 @@ public class WebSocketEventListener {
 
         StompHeaderAccessor accessor = StompHeaderAccessor.wrap(event.getMessage());
 
-        String userId = (String) accessor.getSessionAttributes().get("userId");
+        // String userId = (String) accessor.getSessionAttributes().get("userId");
+
+        Integer userId = (Integer) accessor.getSessionAttributes().get("userId");
 
 //        String userId = accessor.getFirstNativeHeader("userId");
 
         log.info("CONNECT FRAME received | userId = {}", userId);
 
         if (userId != null) {
-//            event.getMessage().getHeaders().put("userId", userId);
-            onlineUserTracker.userConnected(userId);
+        //   event.getMessage().getHeaders().put("userId", userId);
+            onlineUserTracker.userConnected(String.valueOf(userId));  // yeh expect string me kar raha tha to vapas se string me convert kara user id ko
         } else {
             log.warn("❌ userId not found in CONNECT headers");
         }

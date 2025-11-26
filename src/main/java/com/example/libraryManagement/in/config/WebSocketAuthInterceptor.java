@@ -33,10 +33,12 @@ public class WebSocketAuthInterceptor implements ChannelInterceptor {
                 try {
                     String username = jwtTokenUtil.extractUsername(token);
 
-                    // SAVE TO SESSION
-                    accessor.getSessionAttributes().put("userId", username);
+                    int userId = jwtTokenUtil.extractUserId(token);
 
-                    System.out.println("🌟 WebSocket CONNECT Authenticated userId = " + username);
+                    // SAVE TO SESSION
+                    accessor.getSessionAttributes().put("userId", userId);
+
+                    System.out.println("🌟 WebSocket CONNECT Authenticated userId = " + userId);
 
                 } catch (Exception e) {
                     System.out.println("❌ Invalid WebSocket Token: " + e.getMessage());

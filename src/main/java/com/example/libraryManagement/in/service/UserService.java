@@ -81,7 +81,7 @@ public class UserService {
             if (user != null && user.getPassword().equals(password) && user.getUserType().equals(usertype)) {
 
             // ✅ Generate JWT token
-            String token = jwtTokenUtil.generateToken(user.getUserName());
+            String token = jwtTokenUtil.generateToken(user.getUserName(),user.getId());
 
             // ✅ Create HttpOnly cookie for JWT
             ResponseCookie jwtCookie = ResponseCookie.from("Authorization", token)
