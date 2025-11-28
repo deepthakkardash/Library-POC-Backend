@@ -36,11 +36,11 @@ public class NotificationService
     public void sendNotification(Notification notification) {
         log.info("Comes to Send Notification!!");
 
-        String username=userRepository.findByUserId(notification.getUserId()).getUsername();
+        String username=userRepository.findByUserId(notification.getUserId()).getUsername();  // here changes by sir direct using username but i am using userId
 
-        if (onlineUserTracker.isUserOnline(username)) {
+        if (onlineUserTracker.isUserOnline(String.valueOf(notification.getUserId()))) {
             messagingTemplate.convertAndSendToUser(
-                    String.valueOf(notification.getUserId()),
+                    username,
                     "/queue/notifications",
                     notification
             );
@@ -79,6 +79,7 @@ public class NotificationService
             messagingTemplate.convertAndSend("/topic/admin", saved);
 //            return saved;
         }
+
 
         // 4️⃣ Role-based notifications ONLY if needed
 //        if (notification.getTargetRole() != null) {

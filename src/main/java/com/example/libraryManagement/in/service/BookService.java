@@ -81,8 +81,6 @@ public class BookService {
                 notificationService.send_Notification_NEW_BOOK(notif);
             }
         }
-
-
 		return true;
 	}
 	

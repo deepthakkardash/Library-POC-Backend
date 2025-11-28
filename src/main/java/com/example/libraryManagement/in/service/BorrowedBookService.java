@@ -2,21 +2,14 @@ package com.example.libraryManagement.in.service;
 
 import java.time.LocalDateTime;
 import java.util.List;
-import java.util.Optional;
-import java.util.stream.Collector;
 import java.util.stream.Collectors;
-
 import com.example.libraryManagement.in.entites.*;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
-
 import com.example.libraryManagement.in.repository.bookRepository;
 import com.example.libraryManagement.in.repository.borrowedBookRepository;
 import com.example.libraryManagement.in.repository.userRepository;
-
 
 @Slf4j
 @Service
@@ -165,16 +158,16 @@ public class BorrowedBookService {
 
         List<User> users=userRepo.findByUserType("Admin");
 
-        for (User u : users) {
-            log.info("Admin name : {}", user.getUserName());
+        for (User admin : users) {                                   // changes in admin id
+            log.info("Admin name : {}", admin.getUserName());
 
             Notification notif = Notification.builder()
-                    .userId(u.getUserId())
+                    .userId(admin.getUserId())
                     .type("BOOK_BORROWED")
                     .targetRole("Admin")
                     .title("Book Borrowed!")
                     .entityType("BORROW")
-                    .message("User '" + u.getUserName() + "' borrowed the book '" + book.getTitle() + "'.")
+                    .message("User '" + user.getUserName() + "' borrowed the book '" + book.getTitle() + "'.")
                     .payload("{\"bookId\":" + book.getBookId() + "}")
                     .status(NotificationStatus.PENDING)
                     .build();
