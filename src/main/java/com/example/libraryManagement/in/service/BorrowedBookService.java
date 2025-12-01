@@ -166,6 +166,8 @@ public class BorrowedBookService {
                     .type("BOOK_BORROWED")
                     .targetRole("Admin")
                     .title("Book Borrowed!")
+
+
                     .entityType("BORROW")
                     .message("User '" + user.getUserName() + "' borrowed the book '" + book.getTitle() + "'.")
                     .payload("{\"bookId\":" + book.getBookId() + "}")
